@@ -3,21 +3,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 export const runtime = "edge";
 
-type Data = {
-  result: {
-    summary: string;
-  };
-  success: boolean;
-};
-
 const MODEL = "meta/m2m100-1.2b";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+export default async function handler(req: Request) {
   if (req.method === "POST") {
-    const { text } = req.body;
+    const { text } = await req.json();
 
     const response = await fetch(`${process.env.CF_WORKER_AI}/${MODEL}`, {
       method: "POST",
@@ -33,8 +23,12 @@ export default async function handler(
     });
 
     const data = await response.json();
-    return res.status(200).json(data);
+    return Response.json(data, {
+      status: 200,
+    });
   }
 
-  return res.status(405);
+  return Response.json(null, {
+    status: 405,
+  });
 }

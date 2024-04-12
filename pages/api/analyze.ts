@@ -13,12 +13,9 @@ type Data = {
 
 const MODEL = "huggingface/distilbert-sst-2-int8";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+export default async function handler(req: Request) {
   if (req.method === "POST") {
-    const { text } = req.body;
+    const { text } = await req.json();
 
     const response = await fetch(`${process.env.CF_WORKER_AI}/${MODEL}`, {
       method: "POST",
@@ -32,8 +29,12 @@ export default async function handler(
     });
 
     const data = await response.json();
-    return res.status(200).json(data);
+    return Response.json(data, {
+      status: 200,
+    });
   }
 
-  return res.status(405);
+  return Response.json(null, {
+    status: 405,
+  });
 }
