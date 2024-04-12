@@ -15,3 +15,5 @@ export type Article = {
     name: string;
   };
 };
+
+export type ModeType = "creator" | "reader";

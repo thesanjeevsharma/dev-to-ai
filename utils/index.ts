@@ -37,3 +37,7 @@ export const getPositivityText = (positivity: number) => {
     return "Negative 😕";
   }
 };
+
+export const addLineBreaks = (text: string) => {
+  return text.replace(/\n/g, "<br>");
+};

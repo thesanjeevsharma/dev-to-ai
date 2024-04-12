@@ -202,7 +202,7 @@ const Home = () => {
               value={url}
               onChange={(e) => setUrl(e.target.value.trim())}
             />
-            {error && <p className="text-red-500">{error}</p>}
+            {!!error && <p className="text-red-500">{error}</p>}
           </div>
           {showTranslateOption ? (
             <div className="mb-4 flex items-center justify-between">
