@@ -1,7 +1,8 @@
 import React from "react";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 
-import { getStepStatus, sanitizeText } from "@/utils";
-import { STEP_TEXT } from "@/constants";
+import { getPositivityText, getStepStatus, sanitizeText } from "@/utils";
+import { DEV_TO_URL_REGEX, LANGUAGES, STEP_TEXT } from "@/constants";
 
 import {
   ArticleCard,
@@ -16,14 +17,36 @@ import { APIState, Article, Step as StepType } from "@/types";
 
 const Home = () => {
   const [url, setUrl] = React.useState<string>("");
+  const [error, setError] = React.useState<string>("");
   const [apiState, setApiState] = React.useState<APIState>(null);
 
   const [article, setArticle] = React.useState<Article | null>(null);
   const [summary, setSummary] = React.useState<string>("");
+  const [positivity, setPositivity] = React.useState<number>(0);
   const [translatedSummary, setTranslatedSummary] = React.useState<string>("");
+
+  const [showTranslateOption, setShowTranslateOption] =
+    React.useState<boolean>(false);
+  const [translateTo, setTranslateTo] = React.useState<string>("hi");
+
+  const resetApp = () => {
+    setError("");
+    setArticle(null);
+    setSummary("");
+    setPositivity(0);
+    setTranslatedSummary("");
+  };
 
   const handleFetchArticle = async () => {
     try {
+      resetApp();
+
+      const isValid = DEV_TO_URL_REGEX.test(url);
+      if (!isValid) {
+        setError("Invalid URL");
+        return;
+      }
+
       setApiState(StepType.FETCH);
       const response = await fetch(
         url.replace(
@@ -44,34 +67,42 @@ const Home = () => {
     }
   };
 
-  const handleSummarizeArticle = React.useCallback(async (text: string) => {
-    try {
-      const response = await fetch("/api/summarize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-        }),
-      });
+  const handleSummarizeArticle = React.useCallback(
+    async (text: string) => {
+      try {
+        const response = await fetch("/api/summarize", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text,
+          }),
+        });
 
-      if (response.status === 200) {
-        const data = await response.json();
-        if (data.success) {
-          setSummary(data.result.summary);
-          setApiState(StepType.TRANSLATE);
+        if (response.status === 200) {
+          const data = await response.json();
+          if (data.success) {
+            setSummary(data.result.summary);
+
+            if (showTranslateOption) {
+              setApiState(StepType.TRANSLATE);
+            } else {
+              setApiState(StepType.DONE);
+            }
+          } else {
+            throw new Error("Failed to summarize article");
+          }
         } else {
           throw new Error("Failed to summarize article");
         }
-      } else {
-        throw new Error("Failed to summarize article");
+      } catch (error) {
+        setApiState(null);
+        console.error(error);
       }
-    } catch (error) {
-      setApiState(null);
-      console.error(error);
-    }
-  }, []);
+    },
+    [showTranslateOption]
+  );
 
   const handleSentimentAnalysis = React.useCallback(async (text: string) => {
     try {
@@ -88,7 +119,11 @@ const Home = () => {
       if (response.status === 200) {
         const data = await response.json();
         if (data.success) {
-          console.log({ data });
+          // @ts-ignore
+          const positivityObj = data.result.find((d) => d.label === "POSITIVE");
+          if (positivityObj) {
+            setPositivity(positivityObj.score);
+          }
         } else {
           throw new Error("Failed to analyze article");
         }
@@ -101,49 +136,58 @@ const Home = () => {
     }
   }, []);
 
-  const handleTranslation = React.useCallback(async (text: string) => {
-    try {
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-        }),
-      });
+  const handleTranslation = React.useCallback(
+    async (text: string) => {
+      try {
+        const response = await fetch("/api/translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text,
+            language: translateTo,
+          }),
+        });
 
-      if (response.status === 200) {
-        const data = await response.json();
-        if (data.success) {
-          setTranslatedSummary(data.result.translated_text);
+        if (response.status === 200) {
+          const data = await response.json();
+          if (data.success) {
+            setApiState(StepType.DONE);
+            setTranslatedSummary(data.result.translated_text);
+          } else {
+            throw new Error("Failed to translate article");
+          }
         } else {
           throw new Error("Failed to translate article");
         }
-      } else {
-        throw new Error("Failed to translate article");
+      } catch (error) {
+        setApiState(null);
+        console.error(error);
       }
-    } catch (error) {
-      setApiState(null);
-      console.error(error);
-    }
-  }, []);
+    },
+    [translateTo]
+  );
 
   React.useEffect(() => {
-    if (article?.body_html) {
+    if (apiState === StepType.SUMMARIZE && article?.body_html) {
       const text = sanitizeText(article!.body_html);
       handleSummarizeArticle(text);
       handleSentimentAnalysis(text);
     }
-  }, [article, handleSummarizeArticle, handleSentimentAnalysis]);
-
-  React.useEffect(() => {
-    if (summary) {
+    if (apiState === StepType.TRANSLATE && summary) {
       handleTranslation(summary);
     }
-  }, [summary, handleTranslation]);
+  }, [
+    apiState,
+    summary,
+    article,
+    handleSummarizeArticle,
+    handleTranslation,
+    handleSentimentAnalysis,
+  ]);
 
-  const isInProgress = apiState !== null;
+  const isInProgress = ![null, StepType.DONE].includes(apiState);
 
   return (
     <>
@@ -153,48 +197,95 @@ const Home = () => {
           <div className="mb-4">
             <Input
               label="Article URL"
-              placeholder="https://dev.to/thesanjeevsharma/introduction-to-nginx-213b"
+              placeholder="Paste DEV article URL here"
               name="url"
               value={url}
               onChange={(e) => setUrl(e.target.value.trim())}
             />
+            {error && <p className="text-red-500">{error}</p>}
           </div>
-          <Button disabled={isInProgress} onClick={handleFetchArticle}>
+          {showTranslateOption ? (
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <label className="text-white mr-2">Translate to</label>
+                <select
+                  className="block w-32 px-2 py-1 border border-gray-100 rounded"
+                  value={translateTo}
+                  onChange={(e) => setTranslateTo(e.target.value)}
+                >
+                  {LANGUAGES.map((language) => (
+                    <option key={language.value} value={language.value}>
+                      {language.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span
+                className="text-white"
+                onClick={() => setShowTranslateOption(false)}
+              >
+                <AiOutlineCloseCircle />
+              </span>
+            </div>
+          ) : (
+            <div
+              className="mb-4"
+              role="button"
+              tabIndex={1}
+              onClick={() => setShowTranslateOption(true)}
+            >
+              <p className="text-sm text-white underline">
+                Summary in your language?
+              </p>
+            </div>
+          )}
+          <Button disabled={!url || isInProgress} onClick={handleFetchArticle}>
             {isInProgress ? "Working on it..." : "Summarize"}
           </Button>
         </div>
 
-        <div className="mb-8">
-          <div className="mb-4">
-            <div className="mb-2">
-              <Step
-                status={getStepStatus(StepType.FETCH, apiState)}
-                text={STEP_TEXT[StepType.FETCH]}
-              />
+        {apiState !== null && (
+          <div className="mb-8">
+            <div className="mb-4">
+              <div className="mb-2">
+                <Step
+                  status={getStepStatus(StepType.FETCH, apiState)}
+                  text={STEP_TEXT[StepType.FETCH]}
+                />
+              </div>
+              {!!article && <ArticleCard article={article} />}
             </div>
-            {!!article && <ArticleCard article={article} />}
-          </div>
 
-          <div className="mb-4">
-            <div className="mb-2">
-              <Step
-                status={getStepStatus(StepType.SUMMARIZE, apiState)}
-                text={STEP_TEXT[StepType.SUMMARIZE]}
-              />
+            <div className="mb-4">
+              <div className="mb-2">
+                <Step
+                  status={getStepStatus(StepType.SUMMARIZE, apiState)}
+                  text={STEP_TEXT[StepType.SUMMARIZE]}
+                />
+              </div>
+              {!!summary && <SummaryCard text={summary} />}
+              {!!positivity && (
+                <div className="mt-2 text-white">
+                  Sentiment analysis: {getPositivityText(positivity)}
+                </div>
+              )}
             </div>
-            {!!summary && <SummaryCard text={summary} />}
-          </div>
 
-          <div className="mb-4">
-            <div className="mb-2">
-              <Step
-                status={getStepStatus(StepType.TRANSLATE, apiState)}
-                text={STEP_TEXT[StepType.TRANSLATE]}
-              />
-            </div>
-            {!!translatedSummary && <SummaryCard text={translatedSummary} />}
+            {showTranslateOption && (
+              <div className="mb-4">
+                <div className="mb-2">
+                  <Step
+                    status={getStepStatus(StepType.TRANSLATE, apiState)}
+                    text={STEP_TEXT[StepType.TRANSLATE]}
+                  />
+                </div>
+                {!!translatedSummary && (
+                  <SummaryCard text={translatedSummary} />
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </main>
     </>
   );

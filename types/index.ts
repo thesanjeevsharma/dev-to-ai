@@ -2,6 +2,7 @@ export enum Step {
   FETCH,
   SUMMARIZE,
   TRANSLATE,
+  DONE,
 }
 
 export type APIState = null | Step;

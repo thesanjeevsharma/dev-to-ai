@@ -7,7 +7,7 @@ const MODEL = "meta/m2m100-1.2b";
 
 export default async function handler(req: Request) {
   if (req.method === "POST") {
-    const { text } = await req.json();
+    const { text, language } = await req.json();
 
     const response = await fetch(`${process.env.CF_WORKER_AI}/${MODEL}`, {
       method: "POST",
@@ -18,7 +18,7 @@ export default async function handler(req: Request) {
       body: JSON.stringify({
         text,
         source_lang: "en",
-        target_lang: "es",
+        target_lang: language,
       }),
     });
 
