@@ -130,7 +130,7 @@ const Creator = () => {
               name="description"
               id="description"
               rows={5}
-              placeholder="My article will explain about AI"
+              placeholder="e.g. The rise of AI tools in software development"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />

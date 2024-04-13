@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Switch } from "..";
 
 import { ModeType } from "@/types";
@@ -12,7 +13,10 @@ const NavBar = ({ mode }: Props) => {
   return (
     <nav className="bg-zinc-900 text-white px-4">
       <div className="h-12 flex items-center justify-between mx-auto w-full md:max-w-allowed md:h-16">
-        <span>DEV AI ✨</span>
+        <span className="flex items-center">
+          <Image alt="Logo" src="/logo.svg" width={32} height={32} />
+          <span className="text-sm font-bold ml-2">DEV AI</span>
+        </span>
         <Switch mode={mode} />
       </div>
       <div

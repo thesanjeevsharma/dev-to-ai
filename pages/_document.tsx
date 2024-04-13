@@ -4,7 +4,8 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <title>DEV AI ✨</title>
+        <link rel="icon" type="image/x-icon" href="/logo.svg" />
+        <title>DEV AI</title>
         <meta
           name="description"
           content="Unofficial AI app for DEV readers and creators."
