@@ -11,10 +11,10 @@
 The app runs in two modes: `Creator` and `Reader` mode.
 
 1. **Creator mode**: Let's you generate a cover image and action plan for your next article.
-   ![Creator mode](https://dev-to-ai.pages.dev/creator-mode.png)
+   ![Creator mode](https://dev-to-ai.pages.dev/creator-mode.jpeg)
 
 2. **Reader mode**: Let's you summarize and translate an article. It also provides a sentiment analysis of the article.
-   ![Reader mode](https://dev-to-ai.pages.dev/reader-mode.png)
+   ![Reader mode](https://dev-to-ai.pages.dev/reader-mode.jpeg)
 
 ## Installation Steps
 
