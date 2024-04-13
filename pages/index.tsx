@@ -4,7 +4,14 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 import { getPositivityText, getStepStatus, sanitizeText } from "@/utils";
 import { DEV_TO_URL_REGEX, LANGUAGES, STEP_TEXT } from "@/constants";
 
-import { ArticleCard, Button, Input, Step, SummaryCard } from "@/components";
+import {
+  ArticleCard,
+  Button,
+  Input,
+  Select,
+  Step,
+  SummaryCard,
+} from "@/components";
 import { RootLayout } from "@/layouts";
 
 import { APIState, Article, Step as StepType } from "@/types";
@@ -200,20 +207,12 @@ const Home = () => {
           </div>
           {showTranslateOption ? (
             <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center">
-                <label className="text-white mr-2">Translate to</label>
-                <select
-                  className="block w-32 px-2 py-1 border border-gray-100 rounded"
-                  value={translateTo}
-                  onChange={(e) => setTranslateTo(e.target.value)}
-                >
-                  {LANGUAGES.map((language) => (
-                    <option key={language.value} value={language.value}>
-                      {language.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Translate to"
+                value={translateTo}
+                onChange={(e) => setTranslateTo(e.target.value)}
+                options={LANGUAGES}
+              />
               <span
                 className="text-white cursor-pointer"
                 onClick={() => setShowTranslateOption(false)}

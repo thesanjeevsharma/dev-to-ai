@@ -1,13 +1,10 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from "next";
-
 export const runtime = "edge";
 
-const MODEL = "lykon/dreamshaper-8-lcm";
+const MODEL = "stabilityai/stable-diffusion-xl-base-1.0";
 
 export default async function handler(req: Request) {
   if (req.method === "POST") {
-    const { text } = await req.json();
+    const { text, style } = await req.json();
 
     const response = await fetch(`${process.env.CF_WORKER_AI}/${MODEL}`, {
       method: "POST",
@@ -16,7 +13,7 @@ export default async function handler(req: Request) {
         Authorization: `Bearer ${process.env.CF_TOKEN}`,
       },
       body: JSON.stringify({
-        prompt: text,
+        prompt: `Create a cover image for a tech blog post discussing ${text}. The style should be ${style}, reflecting the essence of the article's content.`,
       }),
     });
 

@@ -2,11 +2,14 @@ import React from "react";
 import Image from "next/image";
 import { AiOutlineDownload } from "react-icons/ai";
 
-import { Button } from "@/components";
+import { IMAGE_STYLES } from "@/constants";
+
+import { Button, Select } from "@/components";
 import { RootLayout } from "@/layouts";
 
 const Creator = () => {
   const [description, setDescription] = React.useState<string>("");
+  const [imageStyle, setImageStyle] = React.useState<string>("3D model");
   const [error, setError] = React.useState<string>("");
 
   const [isGeneratingImage, setIsGeneratingImage] =
@@ -34,6 +37,7 @@ const Creator = () => {
         },
         body: JSON.stringify({
           text: description,
+          style: imageStyle,
         }),
       });
 
@@ -52,7 +56,7 @@ const Creator = () => {
       setIsGeneratingImage(false);
       console.error(error);
     }
-  }, [description]);
+  }, [description, imageStyle]);
 
   const handleGeneratePlan = React.useCallback(async () => {
     try {
@@ -136,6 +140,14 @@ const Creator = () => {
             />
             {!!error && <p className="text-red-500">{error}</p>}
           </div>
+          <div className="mb-4">
+            <Select
+              value={imageStyle}
+              onChange={(e) => setImageStyle(e.target.value)}
+              options={IMAGE_STYLES}
+              label="Choose an image style"
+            />
+          </div>
           <Button
             disabled={!description || isGenerating}
             onClick={handleGenerate}
@@ -146,7 +158,7 @@ const Creator = () => {
 
         {isPartiallyGenerated && (
           <div className="mb-4 text-center">
-            <p className="text-white text-xs">
+            <p className="text-white text-xs text-yellow-600">
               Hold on! Still working on the remaining part.
             </p>
           </div>

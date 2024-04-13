@@ -41,3 +41,12 @@ export const LANGUAGES = [
 
 export const DEV_TO_URL_REGEX =
   /^(https?:\/\/)?(www\.)?dev.to\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+-\w+$/;
+
+export const IMAGE_STYLES = [
+  { label: "Van Gogh Art", value: "van gogh art" },
+  { label: "3D Model", value: "3D model" },
+  { label: "Abstract", value: "abstract" },
+  { label: "Realistic", value: "realistic" },
+  { label: "Artistic", value: "artistic" },
+  { label: "Cyberpunk", value: "cyberpunk" },
+];
