@@ -1,7 +1,9 @@
 import React from "react";
 import Image from "next/image";
+import { AiOutlineDownload } from "react-icons/ai";
 
-import { Button, NavBar } from "@/components";
+import { Button } from "@/components";
+import { RootLayout } from "@/layouts";
 
 const Creator = () => {
   const [description, setDescription] = React.useState<string>("");
@@ -101,14 +103,23 @@ const Creator = () => {
     }
   };
 
+  const handleDownloadImage = () => {
+    const link = document.createElement("a");
+    link.href = imgUrl;
+    link.download = "article-cover.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const isGenerating = isGeneratingImage || isGeneratingPlan;
+  const isPartiallyGenerated = (imgUrl || plan) && isGenerating;
 
   return (
-    <>
-      <NavBar mode="creator" />
-      <main className="bg-zinc-950 p-4 min-h-screen">
+    <RootLayout mode="creator">
+      <div className="p-4 md:py-8">
         <div className="mb-8">
-          <p className="text-white text-sm mb-2">
+          <p className="text-white text-sm mb-2 md:text-md">
             Need a structured plan for your next article? Briefly describe your
             idea and let DEV AI help you generate a cover image and a plan for
             your article.
@@ -132,26 +143,46 @@ const Creator = () => {
             {isGenerating ? "Generating..." : "Generate Image and Plan"}
           </Button>
         </div>
-        <div className="mb-8">
-          {!!imgUrl && (
-            <div className="mb-6 text-white">
-              <h3 className="font-medium mb-2">Cover image:</h3>
-              <div className="relative w-full h-80">
-                <Image alt="AI generated" src={imgUrl} fill={true} />
+
+        {isPartiallyGenerated && (
+          <div className="mb-4 text-center">
+            <p className="text-white text-xs">
+              Hold on! Still working on the remaining part.
+            </p>
+          </div>
+        )}
+
+        {(imgUrl || plan) && (
+          <div className="mb-8">
+            {!!imgUrl && (
+              <div className="mb-6 text-white">
+                <h3 className="font-medium mb-2">Cover image:</h3>
+                <div className="relative w-full h-80 md:w-1/2">
+                  <span
+                    className="z-10 right-2 top-2 flex items-center absolute bg-white text-black p-2"
+                    onClick={handleDownloadImage}
+                    role="button"
+                    tabIndex={1}
+                  >
+                    <AiOutlineDownload />{" "}
+                    <span className="ml-2 text-sm"> Download </span>
+                  </span>
+                  <Image alt="AI generated" src={imgUrl} fill={true} />
+                </div>
               </div>
-            </div>
-          )}
-          {!!plan && (
-            <div className="text-white">
-              <h3 className="font-medium mb-2">Plan for your article:</h3>
-              <div className="bg-zinc-900 rounded p-2 text-md whitespace-pre-line">
-                {plan}
+            )}
+            {!!plan && (
+              <div className="text-white">
+                <h3 className="font-medium mb-2">Plan for your article:</h3>
+                <div className="bg-zinc-900 rounded p-2 text-md whitespace-pre-line">
+                  {plan}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </main>
-    </>
+            )}
+          </div>
+        )}
+      </div>
+    </RootLayout>
   );
 };
 

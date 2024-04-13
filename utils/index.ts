@@ -36,8 +36,13 @@ export const getPositivityText = (positivity: number) => {
   if (positivity > 0.1) {
     return "Negative 😕";
   }
+  return "🤷‍♂️";
 };
 
 export const addLineBreaks = (text: string) => {
   return text.replace(/\n/g, "<br>");
+};
+
+export const isDesktop = () => {
+  return typeof window !== "undefined" && window.innerWidth > 768;
 };

@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 export const runtime = "edge";
 
-const MODEL = "bytedance/stable-diffusion-xl-lightning";
+const MODEL = "lykon/dreamshaper-8-lcm";
 
 export default async function handler(req: Request) {
   if (req.method === "POST") {

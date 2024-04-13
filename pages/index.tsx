@@ -4,14 +4,8 @@ import { AiOutlineCloseCircle } from "react-icons/ai";
 import { getPositivityText, getStepStatus, sanitizeText } from "@/utils";
 import { DEV_TO_URL_REGEX, LANGUAGES, STEP_TEXT } from "@/constants";
 
-import {
-  ArticleCard,
-  Button,
-  Input,
-  NavBar,
-  Step,
-  SummaryCard,
-} from "@/components";
+import { ArticleCard, Button, Input, Step, SummaryCard } from "@/components";
+import { RootLayout } from "@/layouts";
 
 import { APIState, Article, Step as StepType } from "@/types";
 
@@ -35,6 +29,7 @@ const Home = () => {
     setSummary("");
     setPositivity(0);
     setTranslatedSummary("");
+    setApiState(null);
   };
 
   const handleFetchArticle = async () => {
@@ -190,9 +185,8 @@ const Home = () => {
   const isInProgress = ![null, StepType.DONE].includes(apiState);
 
   return (
-    <>
-      <NavBar />
-      <main className="bg-zinc-950 p-4 min-h-screen">
+    <RootLayout mode="reader">
+      <div className="p-4 md:py-8">
         <div className="mb-8">
           <div className="mb-4">
             <Input
@@ -221,7 +215,7 @@ const Home = () => {
                 </select>
               </div>
               <span
-                className="text-white"
+                className="text-white cursor-pointer"
                 onClick={() => setShowTranslateOption(false)}
               >
                 <AiOutlineCloseCircle />
@@ -232,7 +226,10 @@ const Home = () => {
               className="mb-4"
               role="button"
               tabIndex={1}
-              onClick={() => setShowTranslateOption(true)}
+              onClick={() => {
+                setShowTranslateOption(true);
+                resetApp();
+              }}
             >
               <p className="text-sm text-white underline">
                 Summary in your language?
@@ -286,8 +283,8 @@ const Home = () => {
             )}
           </div>
         )}
-      </main>
-    </>
+      </div>
+    </RootLayout>
   );
 };
 
